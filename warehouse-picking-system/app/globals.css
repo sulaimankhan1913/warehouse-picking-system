@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-body: Inter, "Segoe UI", Arial, sans-serif;
+  --font-display: Manrope, "Segoe UI", Arial, sans-serif;
   --ink: #10231f;
   --muted: #687772;
   --line: #e1e8e5;
@@ -135,7 +137,56 @@ tbody tr:hover { background: #fbfdfc; }
 .dropzone input { width: 100%; color: var(--muted); font-size: 11px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 9px; }
 
+.table-action { border: 1px solid #b9d9cd; border-radius: 8px; padding: 7px 10px; color: var(--brand); background: #f3fbf8; font-size: 10px; font-weight: 800; white-space: nowrap; }
+.table-action:hover { color: white; background: var(--brand); }
+.back-button { border: 0; margin-bottom: 16px; padding: 0; color: var(--brand); background: transparent; font-size: 11px; font-weight: 750; }
+.picking-heading { align-items: center; }
+.picking-progress-card { min-width: 220px; border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: baseline; background: white; }
+.picking-progress-card strong { color: var(--brand); font: 760 19px var(--font-display); }
+.picking-progress-card span { color: var(--muted); font-size: 10px; }
+.picking-progress { grid-column: 1 / -1; height: 5px; margin-top: 7px; border-radius: 5px; overflow: hidden; background: #e5ece9; }
+.picking-progress span { display: block; height: 100%; border-radius: 5px; background: #3da77d; }
+.picking-message { padding: 24px; color: var(--muted); font-size: 12px; }
+.picking-alert { margin-bottom: 15px; border-radius: 10px; padding: 12px 14px; font-size: 11px; font-weight: 700; }
+.picking-alert.success { border: 1px solid #acdcca; color: #116149; background: #edf9f4; }
+.picking-alert.error { border: 1px solid #efc2bf; color: var(--red); background: var(--red-soft); }
+.start-picking-card { border: 1px solid #b9dccc; border-radius: 13px; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; background: #f2fbf7; }
+.start-picking-card h2 { margin: 0 0 5px; font: 750 17px var(--font-display); }
+.start-picking-card p { margin: 0; color: var(--muted); font-size: 11px; }
+.completed-card { border-color: #b8d8ee; background: #f1f7fc; }
+.picking-grid { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(540px, 1.5fr); gap: 17px; align-items: start; }
+.scan-panel { position: sticky; top: 92px; border: 1px solid var(--line); border-radius: 13px; padding: 18px; background: white; }
+.scan-panel h2 { margin: 0; font: 750 16px var(--font-display); }
+.scan-panel > p { margin: 6px 0 15px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.scan-help { margin-top: 14px; border-radius: 9px; padding: 11px; display: grid; gap: 3px; color: #4d625a; background: #f4f7f5; font-size: 10px; }
+.scan-help strong { color: var(--ink); }
+.pick-lines-panel { min-width: 0; }
+.line-counter { border-radius: 12px; padding: 5px 9px; color: var(--brand); background: var(--mint); font-size: 10px; font-weight: 800; }
+.pick-lines { display: grid; }
+.pick-line { position: relative; display: grid; grid-template-columns: 30px minmax(180px, 1fr) 70px 92px auto; gap: 11px; align-items: center; padding: 14px 16px; border-top: 1px solid #edf1ef; }
+.pick-line:first-child { border-top: 0; }
+.pick-line.confirmed { background: #fbfefc; }
+.pick-line.different { background: #fffaf0; padding-bottom: 31px; }
+.pick-line-number { width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center; color: #6d7c77; background: #eef2f0; font-size: 10px; font-weight: 800; }
+.pick-line.confirmed .pick-line-number { color: white; background: #29936b; }
+.pick-line-product { min-width: 0; display: grid; gap: 3px; }
+.pick-line-product strong { color: var(--brand); font-size: 11px; }
+.pick-line-product span { overflow: hidden; color: var(--ink); font-size: 10px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.pick-line-product small { color: #8b9692; font-size: 8px; }
+.pick-expected, .pick-actual { display: grid; gap: 4px; }
+.pick-expected span, .pick-actual span { color: #8a9691; font-size: 8px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.pick-expected strong { font-size: 14px; }
+.pick-actual input { width: 82px; border: 1px solid #d7e2de; border-radius: 8px; padding: 8px; background: white; font-size: 11px; }
+.confirm-line { padding: 8px 10px; font-size: 10px; }
+.line-difference { position: absolute; left: 57px; bottom: 10px; color: #a06b13; font-size: 9px; font-weight: 700; }
+.finish-picking-bar { border-top: 1px solid var(--line); padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 15px; background: #fafcfb; }
+.finish-picking-bar div { display: grid; gap: 4px; }
+.finish-picking-bar strong { font-size: 11px; }
+.finish-picking-bar span { color: var(--muted); font-size: 9px; }
+.primary-button:disabled, .ghost-button:disabled { cursor: not-allowed; opacity: .5; }
+
 @media (max-width: 1050px) { .stats { grid-template-columns: repeat(2, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1150px) { .picking-grid { grid-template-columns: 1fr; } .scan-panel { position: static; } }
 @media (max-width: 760px) {
   .login-shell { grid-template-columns: 1fr; }
   .login-art { min-height: 260px; }
@@ -157,4 +208,14 @@ tbody tr:hover { background: #fbfdfc; }
   .mobile-bar { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; height: 64px; display: grid; grid-template-columns: repeat(4, 1fr); background: white; border-top: 1px solid var(--line); box-shadow: 0 -5px 20px rgba(25,50,42,.08); }
   .mobile-nav { border: 0; background: white; color: #798680; font-size: 9px; font-weight: 700; }
   .mobile-nav.active { color: var(--brand); }
+  .picking-heading { display: grid; }
+  .picking-progress-card { width: 100%; min-width: 0; }
+  .start-picking-card, .finish-picking-bar { align-items: stretch; flex-direction: column; }
+  .picking-grid { grid-template-columns: 1fr; }
+  .pick-line { grid-template-columns: 27px minmax(0, 1fr) 62px 78px; padding: 13px 12px 58px; gap: 8px; }
+  .pick-line.different { padding-bottom: 70px; }
+  .pick-line-product span { white-space: normal; }
+  .pick-actual input { width: 72px; }
+  .confirm-line { position: absolute; right: 12px; bottom: 13px; }
+  .line-difference { left: 48px; right: 90px; bottom: 18px; }
 }

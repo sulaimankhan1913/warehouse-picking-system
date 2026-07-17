@@ -26,6 +26,7 @@ export type ParsedOrder = {
   notes?: string;
   items: ParsedOrderItem[];
 };
+
 export type DatabaseOrderStatus =
   | "uploaded"
   | "ready_to_pick"
@@ -54,4 +55,21 @@ export type LiveOrder = {
   unitCount: number;
   progress: number;
   createdAt: string;
+};
+
+export type LiveOrderItem = {
+  id: string;
+  sku: string;
+  description: string;
+  barcode: string | null;
+  orderedQuantity: number;
+  pickedQuantity: number | null;
+  packedQuantity: number | null;
+  sortOrder: number;
+};
+
+export type OrderDetails = LiveOrder & {
+  assignedPickerId: string | null;
+  assignedPickerName: string | null;
+  items: LiveOrderItem[];
 };

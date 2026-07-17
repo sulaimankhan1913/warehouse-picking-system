@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BarcodeScanner } from "./barcode-scanner";
+import { PickingWorkspace } from "./picking-workspace";
 import { createClient } from "@/lib/supabase/client";
 import type { CurrentProfile, DatabaseOrderStatus, LiveOrder, ParsedOrder } from "@/lib/types";
 
@@ -55,6 +56,7 @@ export function WarehouseApp() {
   const [queueLoading, setQueueLoading] = useState(true);
   const [queueError, setQueueError] = useState("");
   const [lastScan, setLastScan] = useState("");
+  const [selectedPickingOrder, setSelectedPickingOrder] = useState<LiveOrder | null>(null);
 
   const loadOrders = useCallback(async () => {
     try {
@@ -76,6 +78,8 @@ export function WarehouseApp() {
   }, []);
 
   useEffect(() => {
+    // The initial queue is loaded from Supabase and subsequent changes arrive via Realtime.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadOrders();
     const supabase = createClient();
     if (!supabase) return;
@@ -146,7 +150,7 @@ export function WarehouseApp() {
 
   const viewImportedOrder = () => {
     closeUpload();
-    setScreen("orders");
+    setScreen("picking");
   };
 
   return (
@@ -165,7 +169,7 @@ export function WarehouseApp() {
         {queueError && <div className="content" style={{ paddingBottom: 0 }}><p style={{ color: "#b8443c" }}>{queueError}</p></div>}
         {screen === "dashboard"
           ? <Dashboard orders={orders} loading={queueLoading} setScreen={setScreen} profile={profile} />
-          : <FeatureScreen screen={screen} orders={orders} loading={queueLoading} lastScan={lastScan} setLastScan={setLastScan} />}
+          : <FeatureScreen screen={screen} orders={orders} loading={queueLoading} lastScan={lastScan} setLastScan={setLastScan} profile={profile} selectedPickingOrder={selectedPickingOrder} setSelectedPickingOrder={setSelectedPickingOrder} onQueueChanged={loadOrders} />}
       </main>
 
       <nav className="mobile-bar" aria-label="Mobile navigation">
@@ -189,13 +193,15 @@ function Stat({ label, value, foot, icon, alert = false }: { label: string; valu
   return <div className="stat-card"><div className="stat-top"><span className="stat-label">{label}</span><span className="stat-icon" style={alert ? { color: "#a86412", background: "#fff3d8" } : undefined}>{icon}</span></div><div className="stat-value">{value}</div><div className="stat-foot">{foot}</div></div>;
 }
 
-function OrderTable({ orders, loading }: { orders: LiveOrder[]; loading: boolean }) {
-  return <div className="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Items</th><th>Units</th><th>Progress</th></tr></thead><tbody>{loading && <tr><td colSpan={6}>Loading live orders…</td></tr>}{!loading && orders.length === 0 && <tr><td colSpan={6}>No orders in this queue.</td></tr>}{orders.map((order) => <tr key={order.id}><td className="order-id">{order.orderNumber}</td><td className="customer">{order.customer}</td><td><span className={`status ${statusClass(order.status)}`}>{statusLabels[order.status]}</span></td><td>{order.itemCount}</td><td>{order.unitCount}</td><td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="progress"><span style={{ width: `${order.progress}%` }} /></div><span style={{ color: "#75837e", fontSize: 9 }}>{order.progress}%</span></div></td></tr>)}</tbody></table></div>;
+function OrderTable({ orders, loading, onSelectOrder }: { orders: LiveOrder[]; loading: boolean; onSelectOrder?: (order: LiveOrder) => void }) {
+  const columns = onSelectOrder ? 7 : 6;
+  return <div className="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Items</th><th>Units</th><th>Progress</th>{onSelectOrder && <th>Action</th>}</tr></thead><tbody>{loading && <tr><td colSpan={columns}>Loading live orders…</td></tr>}{!loading && orders.length === 0 && <tr><td colSpan={columns}>No orders in this queue.</td></tr>}{orders.map((order) => <tr key={order.id}><td className="order-id">{order.orderNumber}</td><td className="customer">{order.customer}</td><td><span className={`status ${statusClass(order.status)}`}>{statusLabels[order.status]}</span></td><td>{order.itemCount}</td><td>{order.unitCount}</td><td><div style={{ display: "flex", alignItems: "center", gap: 7 }}><div className="progress"><span style={{ width: `${order.progress}%` }} /></div><span style={{ color: "#75837e", fontSize: 9 }}>{order.progress}%</span></div></td>{onSelectOrder && <td><button className="table-action" onClick={() => onSelectOrder(order)}>{order.status === "picking" ? "Continue" : "Pick order"}</button></td>}</tr>)}</tbody></table></div>;
 }
 
-function FeatureScreen({ screen, orders, loading, lastScan, setLastScan }: { screen: string; orders: LiveOrder[]; loading: boolean; lastScan: string; setLastScan: (value: string) => void }) {
+function FeatureScreen({ screen, orders, loading, lastScan, setLastScan, profile, selectedPickingOrder, setSelectedPickingOrder, onQueueChanged }: { screen: string; orders: LiveOrder[]; loading: boolean; lastScan: string; setLastScan: (value: string) => void; profile: CurrentProfile | null; selectedPickingOrder: LiveOrder | null; setSelectedPickingOrder: (order: LiveOrder | null) => void; onQueueChanged: () => Promise<void> }) {
   if (screen === "orders") return <QueueScreen title="All orders" description="Every imported sales order and its live warehouse status." orders={orders} loading={loading} />;
-  if (screen === "picking") return <div className="content"><div className="heading-row"><div><p className="eyebrow">Warehouse control</p><h1>Picking queue</h1><p className="subtitle">Orders ready to begin or currently being picked.</p></div></div><section className="panel"><OrderTable orders={orders.filter((order) => pickingStatuses.includes(order.status))} loading={loading} /></section><div style={{ marginTop: 17 }} className="screen-grid"><div className="feature-card"><h3>Mobile barcode station</h3><p>Camera scanning is ready. The next workflow update will bind each scan to the selected order line.</p><BarcodeScanner onScan={setLastScan} />{lastScan && <div style={{ marginTop: 14, borderRadius: 9, padding: 12, color: "#116149", background: "#e5f5ef", fontSize: 11, fontWeight: 700 }}>Barcode read: {lastScan}</div>}</div></div></div>;
+  if (screen === "picking" && selectedPickingOrder && profile) return <PickingWorkspace order={selectedPickingOrder} profile={profile} onBack={() => setSelectedPickingOrder(null)} onQueueChanged={onQueueChanged} />;
+  if (screen === "picking") return <div className="content"><div className="heading-row"><div><p className="eyebrow">Warehouse control</p><h1>Picking queue</h1><p className="subtitle">Choose an order to start or continue item-by-item picking.</p></div></div><section className="panel"><OrderTable orders={orders.filter((order) => pickingStatuses.includes(order.status))} loading={loading} onSelectOrder={setSelectedPickingOrder} /></section><div style={{ marginTop: 17 }} className="screen-grid"><div className="feature-card"><h3>Barcode test station</h3><p>Use this to check camera access before opening an order. Scans inside an order are saved against its product lines.</p><BarcodeScanner onScan={setLastScan} />{lastScan && <div style={{ marginTop: 14, borderRadius: 9, padding: 12, color: "#116149", background: "#e5f5ef", fontSize: 11, fontWeight: 700 }}>Barcode read: {lastScan}</div>}</div></div></div>;
   if (screen === "packing") return <QueueScreen title="Packing queue" description="Picked orders waiting for verification and packing." orders={orders.filter((order) => packingStatuses.includes(order.status))} loading={loading} />;
   const copy: Record<string, [string, string]> = { discrepancies: ["Discrepancies", "Review missing stock, wrong scans, and quantity differences."], reports: ["Reports", "Export productivity, order cycle time, discrepancy, and audit reports."], users: ["Team & roles", "Manage administrators, pickers, packers, and account access."] };
   const [title, description] = copy[screen] ?? copy.discrepancies;

@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-          '@napi-rs/canvas':
+      '@napi-rs/canvas':
         specifier: 0.1.100
         version: 0.1.100
       '@supabase/ssr':

@@ -93,15 +93,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "The PDF must be smaller than 12 MB." }, { status: 400 });
     }
 
-    // PDF.js requires browser geometry classes that Vercel's Node server
-    // does not provide, so load server-safe versions before PDF.js.
+    // PDF.js expects browser geometry classes even when we only extract text.
+    // Vercel's Node runtime does not provide them, so install the server-safe
+    // implementations before PDF.js is evaluated.
     const canvas = await import("@napi-rs/canvas");
     const polyfills = {
       DOMMatrix: canvas.DOMMatrix,
       ImageData: canvas.ImageData,
       Path2D: canvas.Path2D,
     };
-
     for (const [name, implementation] of Object.entries(polyfills)) {
       if (!Reflect.has(globalThis, name)) {
         Object.defineProperty(globalThis, name, {
@@ -112,8 +112,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Import the worker explicitly so Vercel includes it.
-    // @ts-expect-error PDF.js does not publish types for this worker module.
+    // Import the worker explicitly so Next.js includes it in Vercel's
+    // serverless function instead of leaving PDF.js to load a missing file.
+    // @ts-expect-error PDF.js does not publish a declaration for this runtime module.
     await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
     const pdf = await pdfjs.getDocument({
