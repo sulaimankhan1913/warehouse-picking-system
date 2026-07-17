@@ -112,6 +112,9 @@ export async function POST(request: Request) {
       }
     }
 
+    // Import the worker explicitly so Vercel includes it.
+    // @ts-expect-error PDF.js does not publish types for this worker module.
+    await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
     const pdf = await pdfjs.getDocument({
       data: new Uint8Array(await file.arrayBuffer()),
