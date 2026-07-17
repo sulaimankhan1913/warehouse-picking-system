@@ -26,4 +26,32 @@ export type ParsedOrder = {
   notes?: string;
   items: ParsedOrderItem[];
 };
+export type DatabaseOrderStatus =
+  | "uploaded"
+  | "ready_to_pick"
+  | "picking"
+  | "picked"
+  | "ready_to_pack"
+  | "packing"
+  | "packed"
+  | "completed"
+  | "on_hold";
 
+export type UserRole = "admin" | "picker" | "packer";
+
+export type CurrentProfile = {
+  id: string;
+  fullName: string;
+  role: UserRole;
+};
+
+export type LiveOrder = {
+  id: string;
+  orderNumber: string;
+  customer: string;
+  status: DatabaseOrderStatus;
+  itemCount: number;
+  unitCount: number;
+  progress: number;
+  createdAt: string;
+};
