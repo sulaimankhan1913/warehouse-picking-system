@@ -2,9 +2,15 @@
   "name": "warehouse-picking-system",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@10.22.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
+  },
   "engines": {
-    "node": ">=22.13.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",
@@ -19,7 +25,6 @@
     "pdfjs-dist": "5.4.149",
     "next": "16.2.6",
     "react": "19.2.6",
-    "react-dom": "19.2.6",
     "react-dom": "19.2.6"
   },
   "devDependencies": {
