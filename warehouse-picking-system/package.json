@@ -20,6 +20,7 @@
     "lint": "eslint . --ignore-pattern .next"
   },
   "dependencies": {
+    "@napi-rs/canvas": "0.1.100",
     "@supabase/ssr": "0.7.0",
     "@supabase/supabase-js": "2.57.4",
     "pdfjs-dist": "5.4.149",
