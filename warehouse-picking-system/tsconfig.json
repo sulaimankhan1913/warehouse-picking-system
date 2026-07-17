@@ -33,6 +33,7 @@
   "exclude": [
     "node_modules",
     "build",
+    "batch-expiry-parser-update-2026-07-17",
     "db",
     "drizzle",
     "examples",
